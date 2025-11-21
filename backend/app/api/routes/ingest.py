@@ -2,10 +2,10 @@
 from fastapi import APIRouter, HTTPException
 from typing import List
 
-from schemas.product import Product
-from schemas.service import Service
-from backend.app.services.product_ingestor import ProductIngestor
-from backend.app.services.services_ingestor import ServiceIngestor
+from app.schemas.product import Product
+from app.schemas.service import Service
+from app.services.product_ingestor import ProductIngestor
+from app.services.services_ingestor import ServiceIngestor
 
 router = APIRouter()
 

@@ -1,5 +1,4 @@
-from google import genai
-
+import google.generativeai as genai
 from dotenv import load_dotenv
 import os
 from backend.app.rag.generation.base.base_generator import BaseLLMClient

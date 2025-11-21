@@ -1,21 +1,33 @@
-# backend/app/rag/embeddings/gemini_embedder.py
 
 from typing import List
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+
 from .base.base_embedder import BaseEmbedder
+import google.generativeai as genai
+
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 
 class GeminiEmbedder(BaseEmbedder):
 
-    def __init__(self, model_name: str = "models/gemini-embedding-001"):
+    def __init__(self, model_name: str = "gemini-embedding-001"):
         """
         Default embedding model is Gemini.
         """
-        self.model = GoogleGenerativeAIEmbeddings(model=model_name)
+        self.api_key = os.getenv("GEMINI_API_KEY")
+        self.client = genai.Client(api_key=self.api_key)
+        
+        self.model_name = model_name
 
     def embed(self, texts: List[str]) -> List[List[float]]:
  
         if isinstance(texts, str):
             texts = [texts]
+            
+            
+        result = self.client.models.embed_content(
+        model=self.model_name,
+        contents=texts)
 
-        return self.model.embed_query(texts)
+        return result.embeddings

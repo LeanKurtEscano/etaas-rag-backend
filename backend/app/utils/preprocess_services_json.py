@@ -1,6 +1,6 @@
 from typing import List, Dict
-from schemas.service import Service  
-from backend.app.rag.chunking.chunking import recursive_character_base_chunking
+from app.schemas.service import Service  
+from app.rag.chunking.chunking import recursive_character_base_chunking
 
 def preprocess_service(
     service: Service,

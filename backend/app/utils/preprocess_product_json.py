@@ -1,6 +1,6 @@
 from typing import List, Dict
-from schemas.product import Product  
-from backend.app.rag.chunking.chunking import recursive_character_base_chunking
+from app.schemas.product import Product  
+from app.rag.chunking.chunking import recursive_character_base_chunking
 
 def preprocess_product(
     product: Product,

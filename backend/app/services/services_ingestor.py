@@ -1,9 +1,9 @@
 from typing import List, Dict
-from schemas.service import Service
+from app.schemas.service import Service
 
-from backend.app.rag.embeddings.embedding import GeminiEmbedder
-from backend.app.rag.vectorstore.vectore_store import PineconeVectorStore
-from backend.app.utils.preprocess_services_json import  preprocess_service
+from app.rag.embeddings.embedding import GeminiEmbedder
+from app.rag.vectorstore.vectore_store import PineconeVectorStore
+from app.utils.preprocess_services_json import  preprocess_service
 
 
 class ServiceIngestor():

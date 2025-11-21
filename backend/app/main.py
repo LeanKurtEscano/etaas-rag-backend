@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.app.api.routes import ingest
+from app.api.routes import ingest
 app = FastAPI()
 
 app.add_middleware(
