@@ -1,7 +1,7 @@
 # backend/app/rag/ingest/product_ingestor.py
 from typing import List, Dict
 from schemas.product import Product
-from backend.app.rag.chunking.chunking import recursive_character_base_chunking
+
 from backend.app.rag.embeddings.embedding import GeminiEmbedder
 from backend.app.rag.vectorstore.vectore_store import PineconeVectorStore
 from backend.app.utils.preprocess_product_json import preprocess_product
