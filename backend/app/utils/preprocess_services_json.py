@@ -1,6 +1,5 @@
 from typing import List, Dict
-from textwrap import wrap
-from schemas.service import Service  # your Pydantic Service schema
+from schemas.service import Service  
 from backend.app.rag.chunking.chunking import recursive_character_base_chunking
 def preprocess_service_json(service: Service, store_id: str, chunk_size: int = 400) -> List[Dict]:
     """
