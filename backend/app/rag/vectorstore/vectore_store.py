@@ -1,13 +1,16 @@
 from typing import List, Dict
 from pinecone import Pinecone, ServerlessSpec
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 class PineconeVectorStore:
-    def __init__(self, api_key: str, index_name: str, embedder, dimension: int = 1536):
-        self.pc = Pinecone(api_key=api_key)
+    def __init__(self, index_name: str, embedder, dimension: int = 1536):
+        self.pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
         self.embedder = embedder
         self.index_name = index_name
 
-        # Create index if missing
         if index_name not in self.pc.list_indexes().names():
             self.pc.create_index(
                 name=index_name,
@@ -21,72 +24,37 @@ class PineconeVectorStore:
 
         self.index = self.pc.Index(index_name)
 
-
     def upsert_product_chunks(self, chunks: List[Dict]):
-        """
-        chunks = [
-          {
-            "text": "...",
-            "metadata": {
-                "store_id": 1,
-                "product_id": 20,
-                "chunk_index": 0,
-                ...
-            }
-          }
-        ]
-        """
-        
         if not chunks:
             return
-        
-        
-        
-     
+
         texts = [c["text"] for c in chunks]
         vectors = self.embedder.embed(texts)
 
-    
         payload = []
         for vec, chunk in zip(vectors, chunks):
             _id = f"{chunk['metadata']['product_id']}_{chunk['metadata']['chunk_index']}"
             payload.append({
                 "id": _id,
                 "values": vec,
-                "metadata": chunk["metadata"]
+              "metadata": chunk["metadata"]
+
             })
 
         self.index.upsert(vectors=payload)
-        
-        
-    def delete_by_product(self, store_id: int, product_id: int):
-        """
-        Delete all vectors where store_id & product_id match.
-        """
+
+    def delete_by_product(self, shop_id: int, product_id: int):
         self.index.delete(
             filter={
-                "store_id": store_id,
+                "shop_id": shop_id,
                 "product_id": product_id
             }
-        )   
-        
+        )
+
     def upsert_service_chunks(self, chunks: List[Dict]):
-        """
-        chunks = [
-          {
-            "text": "...",
-            "metadata": {
-                "store_id": 1,
-                "service_id": 20,
-                "chunk_index": 0,
-                ...
-            }
-          }
-          """
-          
         if not chunks:
             return
-        
+
         texts = [c["text"] for c in chunks]
         vectors = self.embedder.embed(texts)
 
@@ -96,37 +64,26 @@ class PineconeVectorStore:
             payload.append({
                 "id": _id,
                 "values": vec,
-                "metadata": chunk["metadata"]
+                 "metadata": chunk["metadata"]
+
             })
 
-        self.index.upsert(vectors=payload) 
-        
+        self.index.upsert(vectors=payload)
 
-
-        
-        
-    def delete_by_service(self, store_id: int, service_id: int):
-        """
-        Delete all vectors where store_id & service_id match.
-        """
+    def delete_by_service(self, shop_id: int, service_id: int):
         self.index.delete(
             filter={
-                "store_id": store_id,
+                "shop_id": shop_id,
                 "service_id": service_id
             }
         )
 
-
-    def delete_by_store(self, store_id: int):
+    def delete_by_shop(self, shop_id: int):
         self.index.delete(
-            filter={"store_id": store_id}
+            filter={"shop_id": shop_id}
         )
 
-
-    def query(self, query_text: str, store_id: int, top_k: int = 5):
-        """
-        Retrieve product chunks, restricted by store_id.
-        """
+    def query(self, query_text: str, shop_id: int, top_k: int = 5):
         q_embed = self.embedder.embed([query_text])[0]
 
         results = self.index.query(
@@ -134,7 +91,7 @@ class PineconeVectorStore:
             top_k=top_k,
             include_metadata=True,
             filter={
-                "store_id": store_id
+                "shop_id": shop_id
             }
         )
 

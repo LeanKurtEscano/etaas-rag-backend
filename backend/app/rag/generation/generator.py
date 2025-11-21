@@ -53,7 +53,7 @@ class LLMShoppingAssistant:
     
     
 
-    def generate_response(self, user_query: str, context: str, **kwargs) -> str:
+    def generate_response(self, user_query: str, context: str) -> str:
         """
         Generate a response for a user query given retrieved RAG context.
 
@@ -66,5 +66,5 @@ class LLMShoppingAssistant:
             str: LLM-generated response.
         """
         prompt = self._build_prompt(user_query, context)
-        response = self.llm_client.generate(prompt, **kwargs)  # adapt depending on LLM SDK
-        return response
+        response = self.llm_client.generate(prompt)  
+        return response.text

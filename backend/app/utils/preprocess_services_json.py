@@ -1,22 +1,34 @@
 from typing import List, Dict
 from schemas.service import Service  
 from backend.app.rag.chunking.chunking import recursive_character_base_chunking
-def preprocess_service_json(service: Service, store_id: str, chunk_size: int = 400) -> List[Dict]:
+
+def preprocess_service(
+    service: Service,
+    shop_id: str,
+    chunk_size: int = 400,
+    chunk_overlap: int = 100
+) -> List[Dict]:
     """
-    Convert a Service object into chunked embeddings payloads for Pinecone.
-    
+    Convert a Service object into structured RAG chunks suitable for upserting
+    into a vector database.
+
+    The function merges service fields (name, business, category, description, etc.)
+    into a single text block, runs recursive character chunking, and attaches RAG
+    metadata to each chunk for shop/service isolation.
+
     Args:
-        service (Service): Pydantic service object.
-        store_id (str): Store ID for metadata.
-        chunk_size (int, optional): Maximum characters per chunk. Defaults to 400.
-    
+        service (Service): Validated service schema.
+        shop_id (str): Identifier for the shop that owns this service.
+        chunk_size (int): Max characters per chunk.
+        chunk_overlap (int): Overlap characters per chunk (for text continuity).
+
     Returns:
-        List[Dict]: List of dicts formatted for `upsert_service_chunks`:
+        List[Dict]: A list of chunks formatted for vector DB ingestion:
             [
                 {
-                    "text": "...",
+                    "text": str,
                     "metadata": {
-                        "store_id": str,
+                        "shop_id": str,
                         "service_id": str,
                         "chunk_index": int,
                         "service_name": str,
@@ -26,12 +38,12 @@ def preprocess_service_json(service: Service, store_id: str, chunk_size: int = 4
                         "address": str | None,
                         "availability": bool,
                         "contact_number": str | None,
-                        "banner_image": str | None,
+                        "banner_image": str | None
                     }
                 }
             ]
     """
-    
+
     service_id = service.id
     service_name = service.serviceName
     business_name = service.businessName
@@ -43,7 +55,6 @@ def preprocess_service_json(service: Service, store_id: str, chunk_size: int = 4
     contact_number = service.contactNumber
     banner_image = service.bannerImage
 
-   
     full_text = f"""
     Service: {service_name}
     Business: {business_name}
@@ -55,15 +66,18 @@ def preprocess_service_json(service: Service, store_id: str, chunk_size: int = 4
     {description}
     """.strip()
 
- 
-    chunked_data = recursive_character_base_chunking(full_text, chunk_size=400, chunk_overlap=100)
-    
+    chunked_data = recursive_character_base_chunking(
+        full_text,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap
+    )
+
     chunks = []
     for chunk_data in chunked_data:
         chunks.append({
             "text": chunk_data["text"],
             "metadata": {
-                "store_id": store_id,
+                "shop_id": shop_id,
                 "service_id": service_id,
                 "chunk_index": chunk_data["index"],
                 "service_name": service_name,

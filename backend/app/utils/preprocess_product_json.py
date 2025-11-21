@@ -2,22 +2,33 @@ from typing import List, Dict
 from schemas.product import Product  
 from backend.app.rag.chunking.chunking import recursive_character_base_chunking
 
-def preprocess_product(product: Product, store_id: str, chunk_size: int = 400) -> List[Dict]:
+def preprocess_product(
+    product: Product,
+    shop_id: str,
+    chunk_size: int = 400,
+    chunk_overlap: int = 100
+) -> List[Dict]:
     """
-    Convert a Product object into chunked embeddings payloads for Pinecone.
-    
+    Convert a Product object into structured RAG chunks suitable for upserting
+    into a vector database.
+
+    The function merges product fields (name, category, price, variants, description)
+    into a single text block, runs recursive character chunking, and attaches RAG
+    metadata to each chunk for shop/product isolation.
+
     Args:
-        product (Product): Pydantic product object.
-        store_id (str): Store ID for metadata.
-        chunk_size (int, optional): Maximum characters per chunk. Defaults to 400.
-    
+        product (Product): Validated product schema.
+        shop_id (str): Identifier for the shop that owns this product.
+        chunk_size (int): Max characters per chunk.
+        chunk_overlap (int): Overlap characters per chunk (for text continuity).
+
     Returns:
-        List[Dict]: List of dicts formatted for `upsert_product_chunks`:
+        List[Dict]: A list of chunks formatted for vector DB ingestion:
             [
                 {
-                    "text": "...",
+                    "text": str,
                     "metadata": {
-                        "store_id": str,
+                        "shop_id": str,
                         "product_id": str,
                         "chunk_index": int,
                         "product_name": str,
@@ -29,7 +40,7 @@ def preprocess_product(product: Product, store_id: str, chunk_size: int = 400) -
                 }
             ]
     """
-    
+
     product_id = product.id
     name = product.name
     description = product.description
@@ -42,9 +53,11 @@ def preprocess_product(product: Product, store_id: str, chunk_size: int = 400) -
         summary_lines = []
         for variant in product.variants:
             combo = ", ".join(variant.combination)
-            summary_lines.append(f"Variant: {combo} | Price: {variant.price} | Stock: {variant.stock}")
+            summary_lines.append(
+                f"Variant: {combo} | Price: {variant.price} | Stock: {variant.stock}"
+            )
         variant_summary = "\n".join(summary_lines)
-    
+
     full_text = f"""
     Product: {name}
     Category: {category}
@@ -57,16 +70,20 @@ def preprocess_product(product: Product, store_id: str, chunk_size: int = 400) -
     {variant_summary if variant_summary else ""}
     """.strip()
 
-    chunked_data = recursive_character_base_chunking(full_text, chunk_size=chunk_size, chunk_overlap=100)
+    chunked_data = recursive_character_base_chunking(
+        full_text,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap
+    )
 
     chunks = []
     for chunk_data in chunked_data:
         chunks.append({
             "text": chunk_data["text"],
             "metadata": {
-                "store_id": store_id,
+                "shop_id": shop_id,
                 "product_id": product_id,
-                "chunk_index": chunk_data["index"], 
+                "chunk_index": chunk_data["index"],
                 "product_name": name,
                 "category": category,
                 "base_price": base_price,
