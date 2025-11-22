@@ -1,8 +1,6 @@
-
 from typing import List
-
 from .base.base_embedder import BaseEmbedder
-import google.generativeai as genai
+from google import genai
 
 from dotenv import load_dotenv
 import os
@@ -17,17 +15,16 @@ class GeminiEmbedder(BaseEmbedder):
         """
         self.api_key = os.getenv("GEMINI_API_KEY")
         self.client = genai.Client(api_key=self.api_key)
-        
         self.model_name = model_name
 
     def embed(self, texts: List[str]) -> List[List[float]]:
- 
         if isinstance(texts, str):
             texts = [texts]
             
-            
         result = self.client.models.embed_content(
-        model=self.model_name,
-        contents=texts)
+            model=self.model_name,
+            contents=texts
+        )
 
-        return result.embeddings
+    
+        return [embedding.values for embedding in result.embeddings]

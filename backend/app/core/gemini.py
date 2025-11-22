@@ -19,7 +19,7 @@ class GeminiLLMClient(BaseLLMClient):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY must be set in environment variables")
-        self.client = genai.Client(api_key=self.api_key)
+        self.client = genai.configure(api_key=self.api_key)
 
     def generate(self, prompt: str, **kwargs) -> str:
         """

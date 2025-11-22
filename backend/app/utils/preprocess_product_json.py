@@ -48,7 +48,7 @@ def preprocess_product(
     base_price = product.price
     has_variants = product.hasVariants
 
-    variant_summary = None
+    variant_summary = ""
     if has_variants and product.variants:
         summary_lines = []
         for variant in product.variants:
@@ -75,6 +75,8 @@ def preprocess_product(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap
     )
+    
+    print("chunked_data:", chunked_data)
 
     chunks = []
     for chunk_data in chunked_data:
@@ -88,7 +90,7 @@ def preprocess_product(
                 "category": category,
                 "base_price": base_price,
                 "has_variants": has_variants,
-                "variant_summary": variant_summary if chunk_data["index"] == 0 else None
+                "variant_summary": variant_summary if chunk_data["index"] == 0 else False
             }
         })
 

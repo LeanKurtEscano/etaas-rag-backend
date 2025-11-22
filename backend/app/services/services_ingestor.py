@@ -10,7 +10,7 @@ class ServiceIngestor():
 
     def __init__(self, shop_id: str):
         self.shop_id = shop_id
-        self.pinecone = PineconeVectorStore("services-index", embedder=GeminiEmbedder)
+        self.pinecone = PineconeVectorStore("services-index", embedder=GeminiEmbedder())
 
     def preprocess_to_store_embedding(self, service: Service) -> List[Dict]:
         preproccessed_chunks = preprocess_service(service, self.shop_id)

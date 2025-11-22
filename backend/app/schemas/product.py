@@ -13,9 +13,27 @@ class VariantCategory(BaseModel):
     id: str
     name: str 
     values: List[str]
+    
+class ProductRequest(BaseModel):
+    id: Optional[int] = None
+    name: str
+    description: str
+    category: str
+    price: float
+    quantity: int
+    availability: Union[str, bool]
+    createdAt: Optional[datetime] = None
+    updatedAt: Optional[datetime] = None
+    images: Optional[List[str]] = []
+    hasVariants: bool
+    variantCategories: Optional[List[VariantCategory]] = []
+    variants: Optional[List[VariantCombination]] = []
+    sellerId: Union[str, int]
+
+
 
 class Product(BaseModel):
-    id: str
+    id: int
     name: str
     description: str
     category: str
@@ -28,4 +46,8 @@ class Product(BaseModel):
     hasVariants: bool = False
     variantCategories: Optional[List[VariantCategory]] = []
     variants: Optional[List[VariantCombination]] = []
-    sellerId: str
+    sellerId: Union[str, int]
+
+class ProductMinimal(BaseModel):
+    id: str
+    name: str
