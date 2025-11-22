@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 class Service(BaseModel):
-    id: str
+    id:  Optional[int] = None
     serviceName: str
     serviceDescription: str
     businessName: str
@@ -14,9 +14,10 @@ class Service(BaseModel):
     address: Optional[str]
     ownerName: Optional[str]
     contactNumber: Optional[str]
-    images: Optional[List[HttpUrl]] = []
-    bannerImage: Optional[HttpUrl] = None
-    createdAt: Optional[datetime]
-    updatedAt: Optional[datetime]
+    images: Optional[List[str]] = []
+    bannerImage: Optional[str] = None
+    createdAt: Optional[datetime] = None
+    updatedAt: Optional[datetime] = None
     userId: str
     facebookLink: Optional[str] = ""
+    uid: Optional[str] = ""

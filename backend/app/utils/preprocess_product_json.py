@@ -86,11 +86,13 @@ def preprocess_product(
                 "shop_id": shop_id,
                 "product_id": product_id,
                 "chunk_index": chunk_data["index"],
+                
+                "image_url": product.images[0] if product.images else "",
                 "product_name": name,
                 "category": category,
                 "base_price": base_price,
                 "has_variants": has_variants,
-                "variant_summary": variant_summary if chunk_data["index"] == 0 else False
+                "variant_summary": variant_summary 
             }
         })
 

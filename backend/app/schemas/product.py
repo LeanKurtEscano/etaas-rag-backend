@@ -29,6 +29,7 @@ class ProductRequest(BaseModel):
     variantCategories: Optional[List[VariantCategory]] = []
     variants: Optional[List[VariantCombination]] = []
     sellerId: Union[str, int]
+    uid: Optional[str] = ""
 
 
 
