@@ -27,14 +27,14 @@ class ProductIngestor:
         await self.db.commit()
         await self.db.refresh(db_product)
 
-        # Assign DB ID to the incoming product
+      
         product.id = db_product.id
 
-        # Generate chunks
+       
         preprocessed_chunks = preprocess_product(product, self.shop_id)
         print("Preprocessed chunks:", preprocessed_chunks)
 
-        # Store in Pinecone
+       
         self.pinecone.upsert_product_chunks(preprocessed_chunks)
 
         return preprocessed_chunks
@@ -56,6 +56,7 @@ class ProductIngestor:
             raise Exception("Product not found")
 
         self.pinecone.delete_by_product(self.shop_id, db_product.id)
+        product.id = db_product.id
 
         preprocessed_chunks = preprocess_product(product, self.shop_id)
         self.pinecone.upsert_product_chunks(preprocessed_chunks)
