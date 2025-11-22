@@ -1,4 +1,4 @@
-from select import select
+from sqlalchemy import select
 from typing import List, Dict
 from app.schemas.service import Service
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,7 +16,7 @@ class ServiceIngestor():
 
     async def preprocess_to_store_embedding(self, service: Service) -> List[Dict]:
         
-        db_service = ServiceMinimal(name=service.serviceName)
+        db_service = ServiceMinimal(name=service.serviceName, uid = service.uid)
         self.db.add(db_service)
         await self.db.commit()        
         await self.db.refresh(db_service) 
@@ -33,18 +33,18 @@ class ServiceIngestor():
         
         Subject to change
         """
-        print("Updating product embeddings for UID:", service.uid)
+        print("Updating service embeddings for UID:", service.uid)
 
-        result = await self.db.execute(
-            select(ServiceMinimal).where(ServiceMinimal.uid == service.uid)
-        )
+        query = select(ServiceMinimal).where(ServiceMinimal.uid == service.uid)
+        result = await self.db.execute(query)
         db_service = result.scalar_one_or_none()
+        
 
         if not db_service:
             raise Exception("Service not found")
 
         self.pinecone.delete_by_service(self.shop_id, db_service.id)
-
+        service.id = db_service.id
         preprocessed_chunks = preprocess_service(service, self.shop_id)
         self.pinecone.upsert_service_chunks(preprocessed_chunks)
         

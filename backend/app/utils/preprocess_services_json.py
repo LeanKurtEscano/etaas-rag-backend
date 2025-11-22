@@ -91,5 +91,7 @@ def preprocess_service(
                 "banner_image": banner_image
             }
         })
+        
+        print("Created chunk:", chunks)
 
     return chunks
