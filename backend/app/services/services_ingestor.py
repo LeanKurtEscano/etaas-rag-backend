@@ -9,7 +9,7 @@ from app.models.service import ServiceMinimal
 
 class ServiceIngestor():
 
-    def __init__(self, shop_id: str,db: AsyncSession):
+    def __init__(self, shop_id: int,db: AsyncSession):
         self.shop_id = shop_id
         self.db = db
         self.pinecone = PineconeVectorStore("services-index", embedder=GeminiEmbedder(),dimension=3072)
@@ -20,7 +20,7 @@ class ServiceIngestor():
         self.db.add(db_service)
         await self.db.commit()        
         await self.db.refresh(db_service) 
-
+        
        
         service.id = db_service.id
         preproccessed_chunks = preprocess_service(service, self.shop_id)

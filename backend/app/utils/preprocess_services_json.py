@@ -4,7 +4,7 @@ from app.rag.chunking.chunking import recursive_character_base_chunking
 
 def preprocess_service(
     service: Service,
-    shop_id: str,
+    shop_id: int,
     chunk_size: int = 400,
     chunk_overlap: int = 100
 ) -> List[Dict]:

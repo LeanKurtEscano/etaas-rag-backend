@@ -10,7 +10,7 @@ from app.utils.preprocess_product_json import preprocess_product
 
 class ProductIngestor:
 
-    def __init__(self, shop_id: str, db: AsyncSession):
+    def __init__(self, shop_id: int, db: AsyncSession):
         self.shop_id = shop_id
         self.db = db
         self.pinecone = PineconeVectorStore(
@@ -21,7 +21,6 @@ class ProductIngestor:
 
     async def preprocess_to_store_embedding(self, product: ProductRequest) -> List[Dict]:
 
-        # Insert minimal DB product row
         db_product = ProductMinimal(name=product.name, uid = product.uid)
         self.db.add(db_product)
         await self.db.commit()
