@@ -37,8 +37,7 @@ class PineconeVectorStore:
             payload.append({
                 "id": _id,
                 "values": vec,
-              "metadata": chunk["metadata"]
-
+                "metadata": chunk["metadata"]
             })
 
         self.index.upsert(vectors=payload)
@@ -64,8 +63,7 @@ class PineconeVectorStore:
             payload.append({
                 "id": _id,
                 "values": vec,
-                 "metadata": chunk["metadata"]
-
+                "metadata": chunk["metadata"]
             })
 
         self.index.upsert(vectors=payload)
@@ -84,15 +82,43 @@ class PineconeVectorStore:
         )
 
     def query(self, query_text: str, shop_id: int, top_k: int = 5):
-        q_embed = self.embedder.embed([query_text])[0]
+        """
+        RAG Query:
+        - Cleans input
+        - Embeds user question
+        - Pinecone search with strict tenant filtering (shop_id)
+        - Includes metadata for RAG
+        - Handles common failure cases safely
+        """
 
-        results = self.index.query(
-            vector=q_embed,
-            top_k=top_k,
-            include_metadata=True,
-            filter={
-                "shop_id": shop_id
-            }
-        )
+        if not query_text or not query_text.strip():
+            raise ValueError("Query text cannot be empty.")
 
-        return results
+        if top_k <= 0:
+            raise ValueError("top_k must be > 0")
+
+        query_text = query_text.strip()
+
+        try:
+          
+            q_embed = self.embedder.embed([query_text])[0]
+        except Exception as e:
+            raise RuntimeError(f"Failed to embed query: {e}")
+
+        try:
+
+            results = self.index.query(
+                vector=q_embed,
+                top_k=top_k,
+                include_metadata=True,
+                filter={"shop_id": shop_id}
+            )
+
+ 
+            if not results or not getattr(results, "matches", []):
+                return {"matches": []}
+
+            return results
+
+        except Exception as e:
+            raise RuntimeError(f"Pinecone query failed: {e}")

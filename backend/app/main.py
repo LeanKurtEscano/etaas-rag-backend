@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import ingest, register_test
+from app.api.routes import ingest, register_test,chat
 from contextlib import asynccontextmanager
 from app.core.db import engine, Base
 from fastapi.responses import JSONResponse
@@ -21,7 +21,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -30,11 +29,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Routers
+
 app.include_router(ingest.router, prefix="/api/v1")  
 app.include_router(register_test.router, prefix="/api/v1/register")  
+app.include_router(chat.router, prefix="/api/v1/chat")
 
-# Validation error handler
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     logging.error(f"Validation error for request {request.url}")
