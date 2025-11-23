@@ -3,6 +3,8 @@ from typing import List
 from app.rag.generation.reranker import Reranker
 from app.rag.vectorstore.vectore_store import PineconeVectorStore
 import logging
+import json
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +13,7 @@ class AgenticRAGPipeline:
     Agentic RAG: LLM decides which index to query, retrieves results, reranks, 
     builds context, and generates a response.
     """
+
     def __init__(self, vectorstores: dict, llm):
         """
         vectorstores: dict of index_name -> PineconeVectorStore
@@ -20,28 +23,35 @@ class AgenticRAGPipeline:
         self.llm = llm
         self.reranker = Reranker()
 
-    def decide_index(self, query: str) -> List[str]:
-        """
-        LLM decides which index(es) to query.
-        Returns list of index names (e.g., ["products-index", "services-index"])
-        """
+    def decide_index(self, query: str) -> list[str]:
         prompt = f"""
 You are an AI Shopping Assistant. Given this user query:
 
 "{query}"
 
 Decide which dataset(s) should be used to answer: "products-index", "services-index", or both. 
-Return a JSON list of index names only.
+
+⚠️ Important instructions:
+- ONLY return a valid JSON list of index names.
+- Do NOT include any extra text, explanations, or formatting.
+- Do NOT include backticks, quotes outside the JSON, or Markdown.
+- Example valid output: ["products-index", "services-index"]
+
+Return the JSON list only.
         """
         response = self.llm.generate(prompt)
+
+        # Clean possible Markdown/JSON formatting just in case
+        cleaned = re.sub(r"^```json|```$", "", response.strip(), flags=re.MULTILINE).strip()
+
         try:
-            import json
-            indexes = json.loads(response)
+            indexes = json.loads(cleaned)
+            print("decided indexes:", indexes)
             if isinstance(indexes, list):
                 return indexes
         except Exception:
             logger.warning(f"LLM returned invalid JSON: {response}")
-            
+
         # fallback
         return ["products-index"]
 
@@ -51,7 +61,7 @@ Return a JSON list of index names only.
         """
         try:
             vs = self.vectorstores[index_name]
-            results = vs.query(query, shop_id=shop_id, top_k=top_k)  
+            results = vs.query(query, shop_id=shop_id, top_k=top_k)
             if not results or not getattr(results, "matches", []):
                 return []
             return [
@@ -83,7 +93,7 @@ Return a JSON list of index names only.
     def generate(self, query: str, context: str) -> str:
         if not context:
             return "I don't have product or service information for that item right now."
-        
+
         prompt = f"""
 You are an AI Shopping Assistant for an online store. 
 Users can ask about products or services offered by the shop.
@@ -140,9 +150,7 @@ Context:
 
 Question:
 {query}
-
 """
-
         try:
             return self.llm.generate(prompt)
         except Exception as e:
@@ -167,6 +175,7 @@ Question:
         top_chunks = self.rerank(query, all_chunks)[:top_k]
         context = self.build_context(top_chunks)
         answer = self.generate(query, context)
+        print("answer:", answer)
 
         return {
             "answer": answer,

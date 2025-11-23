@@ -10,7 +10,6 @@ class RAGService:
         
     async def chat(self, shop_id: int, query: str, user_id: str):
 
-     
         user_msg = ChatMessage(
             user_id=user_id,
             shop_id=shop_id,
@@ -21,7 +20,7 @@ class RAGService:
         await self.db.commit()
 
      
-        result = await self.pipeline.run(shop_id=shop_id, query=query)
+        result = self.pipeline.run(shop_id=shop_id, query=query)
         ai_answer = result.get("answer", "")
 
  
