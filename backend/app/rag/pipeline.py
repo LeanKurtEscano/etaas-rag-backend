@@ -3,8 +3,7 @@ from typing import List
 from app.rag.generation.reranker import Reranker
 from app.rag.vectorstore.vectore_store import PineconeVectorStore
 import logging
-import json
-import re
+
 from app.rag.agents.index_routing_agent import IndexRoutingAgent
 from app.rag.agents.response_generation_agent import ResponseGenerationAgent
 logger = logging.getLogger(__name__)
