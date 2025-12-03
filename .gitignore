@@ -4,4 +4,3 @@ venv
 **/Dockerfile
 **/docker-compose.yml
 render.yaml
-.github/
