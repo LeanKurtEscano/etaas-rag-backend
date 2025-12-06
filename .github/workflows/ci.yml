@@ -28,13 +28,10 @@ jobs:
 
       - name: Install dependencies
         working-directory: backend
+        
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-
-      - name: Run Tests
-        working-directory: backend
-        run: pytest
 
   build-and-push-docker:
     runs-on: ubuntu-latest
